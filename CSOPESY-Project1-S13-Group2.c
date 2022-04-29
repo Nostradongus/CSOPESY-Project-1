@@ -1,7 +1,8 @@
 /**
  * @file CSOPESY-Project1-S13-Group2.c
- * @authors Angel Lopez (angel_lopez_a@dlsu.edu.ph), Joshue Jadie (joshue_jadie@dlsu.edu.ph)
- * @date 28-04-22
+ * @author Angel Lopez (angel_lopez_a@dlsu.edu.ph)
+ * @author Joshue Jadie (joshue_jadie@dlsu.edu.ph)
+ * @date 29-04-22
  * @version 1.0
  *
  * CSOPESY S13
@@ -29,8 +30,53 @@ typedef struct Process {
 
 // First-Come First-Serve Scheduling Algorithm
 Process* FCFS (Process* arr, int numOfProcess) {
-    // TODO: complete code
-    return NULL;
+    // initial time
+    int time = 0;
+
+    // results array; sorted by waiting time
+    Process* results = malloc(sizeof(Process) * numOfProcess);
+    // results array index
+    int index = 0;
+
+    // execute FCFS algorithm
+    while (index != numOfProcess) {
+        // first process is the current chosen process for now
+        Process p = arr[0];
+        int curr = 0; // index for current chosen process
+        // get process that has the current shortest arrival time and is not yet executed
+        for (int i = 1; i < numOfProcess; i++) {
+            // if current process process is already executed
+            if (p.burstTime == 0) {
+                p = arr[i];
+                curr = i;
+            }
+            // else if current process has already arrived in waiting queue, and has 
+            // shorter arrival time compared to current chosen process and 
+            // it is not yet executed (burst time != 0)
+            else if (arr[i].arrivalTime <= time && arr[i].arrivalTime < p.arrivalTime && arr[i].burstTime != 0) {
+                p = arr[i];
+                curr = i;
+            }
+        }
+
+        // execute current chosen process
+        p.waitingTime = time - p.arrivalTime;
+        p.runTimes = realloc(NULL, sizeof(RunTime)); // or malloc(sizeof(RunTime))
+        (*p.runTimes).startTime = time;
+        (*p.runTimes).endTime = time + p.burstTime;
+        p.numOfRunTimes++;
+        time += p.burstTime; // update time
+        p.burstTime = 0;     // done executing
+
+        // update process array with executed process
+        arr[curr] = p;
+
+        // store executed process to results
+        results[index] = p;
+        index++;
+    }
+
+    return results;
 }
 
 // Shortest-Job First Scheduling Algorithm
@@ -46,8 +92,8 @@ Process* SJF (Process* arr, int numOfProcess) {
     // execute SJF algorithm
     while (index != numOfProcess) {
         // get process with shortest burst time
-        Process p = arr[0]; // first process is the chosen process for now
-        int curr = 0; // index for chosen process
+        Process p = arr[0]; // first process is the current chosen process for now
+        int curr = 0; // index for current chosen process
         for (int i = 1; i < numOfProcess; i++) {
             // if chosen process is already executed
             if (p.burstTime == 0) {
@@ -55,7 +101,7 @@ Process* SJF (Process* arr, int numOfProcess) {
                 curr = i;
             }
             // else if current process has already arrived in waiting queue and
-            // has shorter burst time compared to chosen process and
+            // has shorter burst time compared to current chosen process and
             // it is not yet executed (burst time != 0)
             else if (arr[i].arrivalTime <= time && arr[i].burstTime < p.burstTime && arr[i].burstTime != 0) {
                 p = arr[i];
@@ -69,7 +115,7 @@ Process* SJF (Process* arr, int numOfProcess) {
             }
         }
 
-        // execute current process
+        // execute current chosen process
         p.waitingTime = time - p.arrivalTime;
         p.runTimes = realloc(NULL, sizeof(RunTime)); // or malloc(sizeof(RunTime))
         (*p.runTimes).startTime = time;
@@ -102,6 +148,7 @@ Process* RR (Process* arr, int numOfProcess) {
 }
 
 int main (int argc, char* argv[]) {
+    // file variables
     char filename[255];
     FILE *file;
 
@@ -117,7 +164,7 @@ int main (int argc, char* argv[]) {
 
     // get CPU scheduling algorithm (X), number of processes (Y), and quantum value (Z) (Round-Robin only)
     int X, Y, Z;
-    char cDump; // to consume newline per line
+    char cDump; // to consume newline per input row
     if ((fscanf(file, "%d %d %d%c", &X, &Y, &Z, &cDump)) == -1) {
         fprintf(stderr, "Error in %s file!", filename);
         exit(1);
@@ -144,8 +191,31 @@ int main (int argc, char* argv[]) {
     // close file after getting all needed inputs
     fclose(file);
 
-    // perform SJF and get result sorted by waiting time in ascending order
-    Process* results = SJF(processes, Y);
+    // execute scheduling algorithms based on value of X
+    // get the results sorted by waiting time in ascending order
+    Process* results = NULL;
+    switch (X) {
+        case 0:
+            // perform FCFS
+            results = FCFS(processes, Y);
+            break;
+        case 1:
+            // perform SJF
+            results = SJF(processes, Y);
+            break;
+        case 2: 
+            // perform SRTF
+            results = SRTF(processes, Y);
+            break;
+        case 3:
+            // perform RR 
+            results = RR(processes, Y);
+            break;
+        default: 
+            // invalid X value, no scheduling algorithm can be used
+            printf("Invalid X value!");
+            exit(1);
+    }
 
     // display results
     for (int i = 0; i < Y; i++) {
