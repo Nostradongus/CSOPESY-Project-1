@@ -137,8 +137,74 @@ Process* SJF (Process* arr, int numOfProcess) {
 
 // Shortest-Remaining-Time-First Scheduling Algorithm
 Process* SRTF (Process* arr, int numOfProcess) {
-    // TODO: complete code
-    return NULL;
+    // initial time
+    int time = 0;
+
+    // results array; sorted by waiting time 
+    Process* results = malloc(sizeof(Process) * numOfProcess);
+    // results array index
+    int index = 0;
+
+    // execute SRTF algorithm
+    while (index != numOfProcess) {
+        // get process with shortest burst time
+        Process p = arr[0]; // first process is the current chosen process for now
+        int curr = 0; // index for current chosen process
+        for (int i = 1; i < numOfProcess; i++) {
+            // if chosen process is already fully executed
+            if (p.burstTime == 0) {
+                p = arr[i];
+                curr = i;
+            }
+            // else if current process has already arrived in waiting queue and
+            // has shorter burst time comapred to current process and
+            // it is not yet executed (burst time != 0)
+            else if (arr[i].arrivalTime <= time && arr[i].burstTime < p.burstTime && arr[i].burstTime != 0) {
+                p = arr[i];
+                curr = i;
+            }
+            // else if both process have the same burst time but current process has arrived earlier
+            // then current process must execute first
+            else if (arr[i].burstTime == p.burstTime && arr[i].arrivalTime < p.arrivalTime) {
+                p = arr[i];
+                curr = i;
+            }
+        }
+
+        // execute current chosen process
+        p.waitingTime += time - p.arrivalTime;
+        p.numOfRunTimes++;
+        p.runTimes = realloc(p.runTimes, sizeof(RunTime) * p.numOfRunTimes);
+        p.runTimes[p.numOfRunTimes - 1].startTime = time; 
+        // stop executing process if new process with shorter burst time has arrived
+        // or current chosen process has been fully executed (burst time = 0)
+        int stop = 0;
+        while (!stop && p.burstTime > 0) {
+            // increase time and decrease burst time of current chosen process
+            time++;
+            p.burstTime--;
+            // check if there are new arrived processes with shorter burst time
+            for (int i = 0; i < numOfProcess; i++) {
+                if (arr[i].arrivalTime == time && arr[i].burstTime < p.burstTime && arr[i].burstTime != 0) {
+                    // stop executing current chosen process
+                    stop = 1;
+                }
+            }
+        }
+        p.runTimes[p.numOfRunTimes - 1].endTime = time;
+        p.arrivalTime = time; // update arrival time of current chosen process for next execution
+
+        // update process array with current chosen process
+        arr[curr] = p;
+
+        // if current chosen process is already completed (burst time = 0), store to results
+        if (p.burstTime == 0) {
+            results[index] = p;
+            index++;
+        }
+    }
+
+    return results;
 }
 
 // Round-Robin Scheduling Algorithm 
@@ -232,7 +298,7 @@ int main (int argc, char* argv[]) {
     for (int i = 0; i < Y; i++) {
         sum += (double) processes[i].waitingTime;
     }
-    printf("Average waiting time: %.2f", sum / (double) Y);
+    printf("Average waiting time: %.1f", sum / (double) Y);
 
     return 0;
 }
