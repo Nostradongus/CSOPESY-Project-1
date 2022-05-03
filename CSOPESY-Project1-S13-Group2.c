@@ -208,9 +208,48 @@ Process* SRTF (Process* arr, int numOfProcess) {
 }
 
 // Round-Robin Scheduling Algorithm 
-Process* RR (Process* arr, int numOfProcess) {
-    // TODO: complete code
-    return NULL;
+Process* RR (Process* arr, int numOfProcess, int quantum) {
+    // initial time
+    int time = 0;
+
+    // results array; sorted by waiting time
+    Process* results = malloc(sizeof(Process) * numOfProcess);
+    // results array index
+    int index = 0;
+
+    // execute RR algorithm
+    int curr = 0; // current chosen process index
+    while (index != numOfProcess) {
+        // get current chosen process to be executed
+        Process p = arr[curr];
+
+        // if current chosen process has already arrived and is not yet completely executed
+        if (p.arrivalTime <= time && p.burstTime > 0) {
+            // execute current chosen process
+            p.waitingTime += time - p.arrivalTime;
+            p.numOfRunTimes++;
+            p.runTimes = realloc(p.runTimes, sizeof(RunTime) * p.numOfRunTimes);
+            p.runTimes[p.numOfRunTimes - 1].startTime = time;
+            time = (p.burstTime < quantum ? time + p.burstTime : time + quantum); // move time 
+            p.burstTime -= quantum; // execute process by time slice value
+            p.runTimes[p.numOfRunTimes - 1].endTime = time;
+            p.arrivalTime = time; // update arrival time of process for next execution
+
+            // update process array with current chosen process
+            arr[curr] = p;
+
+            // if current chosen process is already completed (burst time = 0), store to results
+            if (p.burstTime <= 0) {
+                results[index] = p;
+                index++;
+            }
+        }
+
+        // move to next process in the array
+        curr = curr < numOfProcess ? curr + 1 : 0;
+    }
+
+    return results;
 }
 
 int main (int argc, char* argv[]) {
@@ -275,7 +314,7 @@ int main (int argc, char* argv[]) {
             break;
         case 3:
             // perform RR 
-            results = RR(processes, Y);
+            results = RR(processes, Y, Z);
             break;
         default: 
             // invalid X value, no scheduling algorithm can be used
