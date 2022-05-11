@@ -2,8 +2,7 @@
  * @file CSOPESY-Project1-S13-Group2.c
  * @author Angel Lopez (angel_lopez_a@dlsu.edu.ph)
  * @author Joshue Jadie (joshue_jadie@dlsu.edu.ph)
- * @date 03-05-22
- * @version 1.0
+ * @date 10-05-22
  *
  * CSOPESY S13
  * Project 1 - CPU Scheduling
@@ -43,37 +42,44 @@ Process* FCFS (Process* arr, int numOfProcess) {
         // first process is the current chosen process for now
         Process p = arr[0];
         int curr = 0; // index for current chosen process
+
         // get process that has the current shortest arrival time and is not yet executed
         for (int i = 1; i < numOfProcess; i++) {
-            // if current process process is already executed
-            if (p.burstTime == 0) {
+            // if current process is already executed or has not yet arrived
+            if (p.burstTime == 0 || p.arrivalTime > time) {
                 p = arr[i];
                 curr = i;
             }
             // else if current process has already arrived in waiting queue, and has 
             // shorter arrival time compared to current chosen process and 
-            // it is not yet executed (burst time != 0)
+            // it is not yet executed completely (burst time != 0)
             else if (arr[i].arrivalTime <= time && arr[i].arrivalTime < p.arrivalTime && arr[i].burstTime != 0) {
                 p = arr[i];
                 curr = i;
             }
         }
 
-        // execute current chosen process
-        p.waitingTime = time - p.arrivalTime;
-        p.runTimes = realloc(NULL, sizeof(RunTime)); // or malloc(sizeof(RunTime))
-        (*p.runTimes).startTime = time;
-        (*p.runTimes).endTime = time + p.burstTime;
-        p.numOfRunTimes++;
-        time += p.burstTime; // update time
-        p.burstTime = 0;     // done executing
+        // if current chosen process has already arrived and is not yet completely executed
+        if (p.arrivalTime <= time && p.burstTime > 0) {
+            // execute current chosen process
+            p.waitingTime = time - p.arrivalTime;
+            p.runTimes = realloc(NULL, sizeof(RunTime)); // or malloc(sizeof(RunTime))
+            (*p.runTimes).startTime = time;
+            (*p.runTimes).endTime = time + p.burstTime;
+            p.numOfRunTimes++;
+            time += p.burstTime; // update time
+            p.burstTime = 0;     // done executing
 
-        // update process array with executed process
-        arr[curr] = p;
+            // update process array with executed process
+            arr[curr] = p;
 
-        // store executed process to results
-        results[index] = p;
-        index++;
+            // store executed process to results
+            results[index] = p;
+            index++;
+        } else { // else if no new process has arrived yet and all arrived processes are already completed
+            // move time 
+            time++;
+        }
     }
 
     return results;
@@ -91,12 +97,13 @@ Process* SJF (Process* arr, int numOfProcess) {
 
     // execute SJF algorithm
     while (index != numOfProcess) {
-        // get process with shortest burst time
         Process p = arr[0]; // first process is the current chosen process for now
         int curr = 0; // index for current chosen process
+
+        // get process with shortest burst time
         for (int i = 1; i < numOfProcess; i++) {
-            // if chosen process is already executed
-            if (p.burstTime == 0) {
+            // if chosen process is already executed or has not yet arrived
+            if (p.burstTime == 0 || p.arrivalTime > time) {
                 p = arr[i];
                 curr = i;
             }
@@ -115,21 +122,27 @@ Process* SJF (Process* arr, int numOfProcess) {
             }
         }
 
-        // execute current chosen process
-        p.waitingTime = time - p.arrivalTime;
-        p.runTimes = realloc(NULL, sizeof(RunTime)); // or malloc(sizeof(RunTime))
-        (*p.runTimes).startTime = time;
-        (*p.runTimes).endTime = time + p.burstTime;
-        p.numOfRunTimes++;
-        time += p.burstTime; // update time
-        p.burstTime = 0; // done executing
+        // if current chosen process has already arrived and is not yet completely executed
+        if (p.arrivalTime <= time && p.burstTime > 0) {
+            // execute current chosen process
+            p.waitingTime = time - p.arrivalTime;
+            p.runTimes = realloc(NULL, sizeof(RunTime)); // or malloc(sizeof(RunTime))
+            (*p.runTimes).startTime = time;
+            (*p.runTimes).endTime = time + p.burstTime;
+            p.numOfRunTimes++;
+            time += p.burstTime; // update time
+            p.burstTime = 0;     // done executing
 
-        // update process array with executed process
-        arr[curr] = p;
+            // update process array with executed process
+            arr[curr] = p;
 
-        // store executed process to results 
-        results[index] = p; 
-        index++;
+            // store executed process to results
+            results[index] = p;
+            index++;
+        } else { // else, no new process has arrived yet and all arrived processes are already completed
+            // move time 
+            time++;
+        }
     }
 
     return results;
@@ -147,17 +160,18 @@ Process* SRTF (Process* arr, int numOfProcess) {
 
     // execute SRTF algorithm
     while (index != numOfProcess) {
-        // get process with shortest burst time
         Process p = arr[0]; // first process is the current chosen process for now
         int curr = 0; // index for current chosen process
+
+        // get process with shortest burst time
         for (int i = 1; i < numOfProcess; i++) {
-            // if chosen process is already fully executed
-            if (p.burstTime == 0) {
+            // if chosen process is already fully executed or has not yet arrived
+            if (p.burstTime == 0 || p.arrivalTime > time) {
                 p = arr[i];
                 curr = i;
             }
             // else if current process has already arrived in waiting queue and
-            // has shorter burst time comapred to current process and
+            // has shorter burst time compared to current process and
             // it is not yet executed (burst time != 0)
             else if (arr[i].arrivalTime <= time && arr[i].burstTime < p.burstTime && arr[i].burstTime != 0) {
                 p = arr[i];
@@ -171,36 +185,42 @@ Process* SRTF (Process* arr, int numOfProcess) {
             }
         }
 
-        // execute current chosen process
-        p.waitingTime += time - p.arrivalTime;
-        p.numOfRunTimes++;
-        p.runTimes = realloc(p.runTimes, sizeof(RunTime) * p.numOfRunTimes);
-        p.runTimes[p.numOfRunTimes - 1].startTime = time; 
-        // stop executing process if new process with shorter burst time has arrived
-        // or current chosen process has been fully executed (burst time = 0)
-        int stop = 0;
-        while (!stop && p.burstTime > 0) {
-            // increase time and decrease burst time of current chosen process
-            time++;
-            p.burstTime--;
-            // check if there are new arrived processes with shorter burst time
-            for (int i = 0; i < numOfProcess; i++) {
-                if (arr[i].arrivalTime == time && arr[i].burstTime < p.burstTime && arr[i].burstTime != 0) {
-                    // stop executing current chosen process
-                    stop = 1;
+        // if current chosen process has already arrived and is not yet completely executed
+        if (p.arrivalTime <= time && p.burstTime > 0) {
+            // execute current chosen process
+            p.waitingTime += time - p.arrivalTime;
+            p.numOfRunTimes++;
+            p.runTimes = realloc(p.runTimes, sizeof(RunTime) * p.numOfRunTimes);
+            p.runTimes[p.numOfRunTimes - 1].startTime = time;
+            // stop executing process if new process with shorter burst time has arrived
+            // or current chosen process has been fully executed (burst time = 0)
+            int stop = 0;
+            while (!stop && p.burstTime > 0) {
+                // increase time and decrease burst time of current chosen process
+                time++;
+                p.burstTime--;
+                // check if there are new arrived processes with shorter burst time
+                for (int i = 0; i < numOfProcess; i++) {
+                    if (arr[i].arrivalTime == time && arr[i].burstTime < p.burstTime && arr[i].burstTime != 0) {
+                        // stop executing current chosen process
+                        stop = 1;
+                    }
                 }
             }
-        }
-        p.runTimes[p.numOfRunTimes - 1].endTime = time;
-        p.arrivalTime = time; // update arrival time of current chosen process for next execution
+            p.runTimes[p.numOfRunTimes - 1].endTime = time;
+            p.arrivalTime = time; // update arrival time of current chosen process for next execution
 
-        // update process array with current chosen process
-        arr[curr] = p;
+            // update process array with current chosen process
+            arr[curr] = p;
 
-        // if current chosen process is already completed (burst time = 0), store to results
-        if (p.burstTime == 0) {
-            results[index] = p;
-            index++;
+            // if current chosen process is already completed (burst time = 0), store to results
+            if (p.burstTime == 0) {
+                results[index] = p;
+                index++;
+            }
+        } else { // else, no new process has arrived yet and all arrived processes are already completed
+            // move time
+            time++;
         }
     }
 
@@ -222,7 +242,7 @@ Process* RR (Process* arr, int numOfProcess, int quantum) {
     while (index != numOfProcess) {
         // get current chosen process to be executed
         Process p = arr[curr];
-
+        
         // if current chosen process has already arrived and is not yet completely executed
         if (p.arrivalTime <= time && p.burstTime > 0) {
             // execute current chosen process
@@ -243,10 +263,30 @@ Process* RR (Process* arr, int numOfProcess, int quantum) {
                 results[index] = p;
                 index++;
             }
-        }
 
-        // move to next process in the array
-        curr = curr < numOfProcess ? curr + 1 : 0;
+            // move to next process in the array
+            curr = curr < numOfProcess - 1 ? curr + 1 : 0;
+        } else if (p.burstTime <= 0) { // if current process is already done executing
+            // move to next process in the array
+            curr = curr < numOfProcess - 1 ? curr + 1 : 0;
+        } else  { // else if no new process has arrived yet
+            // check if all arrived processes are already completed
+            int move = 1;
+            for (int i = 0; i < numOfProcess; i++) {
+                // if process has arrived and is not yet completed
+                if (arr[i].arrivalTime <= time && arr[i].burstTime > 0) {
+                    move = 0;
+                }
+            }
+
+            // if all arrived processes are already completed, move time
+            if (move) {
+                time++;
+            } else {
+                // move to next process in the array
+                curr = curr < numOfProcess - 1 ? curr + 1 : 0;
+            }
+        }
     }
 
     return results;
