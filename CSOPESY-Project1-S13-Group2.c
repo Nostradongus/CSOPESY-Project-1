@@ -33,6 +33,7 @@ Process* SJF (Process* arr, int numOfProcess);
 Process* SRTF (Process* arr, int numOfProcess);
 Process* RR (Process *arr, int numOfProcess, int quantum);
 
+// main (driver) function
 int main(int argc, char *argv[]) {
     // file variables
     char filename[255];
@@ -123,12 +124,18 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-// First-Come First-Serve Scheduling Algorithm
+/**
+ * @brief executes the processes using the First-Come First-Serve (FCFS) scheduling algorithm
+ * 
+ * @param   arr             the array of processes
+ * @param   numOfProcess    the number of processes in the array
+ * @return  results         the array of executed processes, sorted by order of execution
+ */
 Process* FCFS (Process* arr, int numOfProcess) {
     // initial time
     int time = 0;
 
-    // results array; sorted by waiting time
+    // results array; sorted by order of finished processes
     Process* results = malloc(sizeof(Process) * numOfProcess);
     // results array index
     int index = 0;
@@ -181,7 +188,13 @@ Process* FCFS (Process* arr, int numOfProcess) {
     return results;
 }
 
-// Shortest-Job First Scheduling Algorithm
+/**
+ * @brief executes the processes using the Shortest-Job First (SJF) scheduling algorithm
+ *
+ * @param   arr             the array of processes
+ * @param   numOfProcess    the number of processes in the array
+ * @return  results         the array of executed processes, sorted by order of execution
+ */
 Process* SJF (Process* arr, int numOfProcess) {
     // initial time
     int time = 0;
@@ -244,7 +257,13 @@ Process* SJF (Process* arr, int numOfProcess) {
     return results;
 }
 
-// Shortest-Remaining-Time-First Scheduling Algorithm
+/**
+ * @brief executes the processes using the Shortest-Remaining-Time-First (SRTF) scheduling algorithm
+ *
+ * @param   arr             the array of processes
+ * @param   numOfProcess    the number of processes in the array
+ * @return  results         the array of executed processes, sorted by order of execution
+ */
 Process* SRTF (Process* arr, int numOfProcess) {
     // initial time
     int time = 0;
@@ -323,7 +342,14 @@ Process* SRTF (Process* arr, int numOfProcess) {
     return results;
 }
 
-// Round-Robin Scheduling Algorithm 
+/**
+ * @brief executes the processes using the Round-Robin (RR) scheduling algorithm
+ *
+ * @param   arr             the array of processes
+ * @param   numOfProcess    the number of processes in the array
+ * @param   quantum         the time-slice value for executing processes
+ * @return  results         the array of executed processes, sorted by order of execution
+ */
 Process* RR (Process* arr, int numOfProcess, int quantum) {
     // initial time
     int time = 0;
