@@ -31,7 +31,7 @@ typedef struct Process {
 Process* FCFS (Process* arr, int numOfProcess);
 Process* SJF (Process* arr, int numOfProcess);
 Process* SRTF (Process* arr, int numOfProcess);
-Process* RR(Process *arr, int numOfProcess, int quantum);
+Process* RR (Process *arr, int numOfProcess, int quantum);
 
 int main(int argc, char *argv[]) {
     // file variables
