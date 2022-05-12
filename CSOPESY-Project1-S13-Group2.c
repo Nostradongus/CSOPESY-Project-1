@@ -43,8 +43,7 @@ int main(int argc, char *argv[]) {
     scanf("%s", filename);
 
     // check if file exists
-    if ((file = fopen(filename, "r")) == NULL)
-    {
+    if ((file = fopen(filename, "r")) == NULL) {
         fprintf(stderr, "%s not found.", filename);
         exit(1);
     }
@@ -52,8 +51,7 @@ int main(int argc, char *argv[]) {
     // get CPU scheduling algorithm (X), number of processes (Y), and quantum value (Z) (Round-Robin only)
     int X, Y, Z;
     char cDump; // to consume newline per input row
-    if ((fscanf(file, "%d %d %d%c", &X, &Y, &Z, &cDump)) == -1)
-    {
+    if ((fscanf(file, "%d %d %d%c", &X, &Y, &Z, &cDump)) == -1) {
         fprintf(stderr, "Error in %s file!", filename);
         exit(1);
     }
@@ -61,11 +59,9 @@ int main(int argc, char *argv[]) {
     // get all processes; process ID, arrival time, and burst time
     Process *processes = malloc(sizeof(Process) * Y);
     int id, arrivalTime, burstTime; // for current inputs
-    for (int i = 0; i < Y; i++)
-    {
+    for (int i = 0; i < Y; i++) {
         // get current process input
-        if ((fscanf(file, "%d %d %d%c", &id, &arrivalTime, &burstTime, &cDump)) == -1)
-        {
+        if ((fscanf(file, "%d %d %d%c", &id, &arrivalTime, &burstTime, &cDump)) == -1) {
             fprintf(stderr, "Error in %s file! Might have bad formatting!", filename);
             exit(1);
         }
@@ -84,8 +80,7 @@ int main(int argc, char *argv[]) {
     // execute scheduling algorithms based on value of X
     // get the results (sorted by order of finished processes)
     Process *results = NULL;
-    switch (X)
-    {
+    switch (X) {
     case 0:
         // perform FCFS
         results = FCFS(processes, Y);
@@ -109,12 +104,10 @@ int main(int argc, char *argv[]) {
     }
 
     // display results
-    for (int i = 0; i < Y; i++)
-    {
+    for (int i = 0; i < Y; i++) {
         Process p = results[i];
         printf("P[%d] ", p.id);
-        for (int j = 0; j < p.numOfRunTimes; j++)
-        {
+        for (int j = 0; j < p.numOfRunTimes; j++) {
             printf("Start Time: %d End Time: %d | ", p.runTimes[j].startTime, p.runTimes[j].endTime);
         }
         printf("Waiting time: %d\n", p.waitingTime);
@@ -122,8 +115,7 @@ int main(int argc, char *argv[]) {
 
     // compute and display average waiting time from all processes
     double sum = 0.0;
-    for (int i = 0; i < Y; i++)
-    {
+    for (int i = 0; i < Y; i++) {
         sum += (double)processes[i].waitingTime;
     }
     printf("Average waiting time: %.1f", sum / (double) Y);
